@@ -1,0 +1,12 @@
+//Need to do
+-Create player class and remove player logic from ModelNode
+-Create Light node
+
+//At some point
+-Set up git repo and push code
+-Clean up code
+-Comment code
+-Remove objects around revealing modules. (DON'T DO THIS UNTIL AFTER THE CODE HAS BEEN PUSHED TO GIT.)
+
+//Would like to do
+-Replace mat4 library, with my own library.
