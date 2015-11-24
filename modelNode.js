@@ -13,6 +13,9 @@ ModelNode.prototype = {
 		var mMatrix = mat4.create();
 		var mMatrixFinal = mat4.create();
 		
+		var shineDamper;
+		var reflectivity;
+		
 		var inputEngine;
 		
 		//TODO: Replace this with ArrayBuffer

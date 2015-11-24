@@ -7,6 +7,8 @@ RenderEngine.prototype = {
 	
 	rEngine : (function(){
 		
+		var MAXNUMOFLIGHTS = 4;
+		
 		var sceneGraph;
 		var assetEngine;
 		
@@ -82,7 +84,9 @@ RenderEngine.prototype = {
 			gl.linkProgram(shaderProgram);
 		
 			if(!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)){
+				alert(gl.getProgramInfoLog(shaderProgram));
 				alert("Could not initialise shaders");
+				
 			}
 		
 			gl.useProgram(shaderProgram);
@@ -99,11 +103,19 @@ RenderEngine.prototype = {
 			shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");
 			gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
 		
-		
 			shaderProgram.nUniform = gl.getUniformLocation(shaderProgram, "uNormalMatrix");
 			shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
 			shaderProgram.vMatrixUniform = gl.getUniformLocation(shaderProgram, "uVMatrix");
 			shaderProgram.mMatrixUniform = gl.getUniformLocation(shaderProgram, "uMMatrix");
+			
+			shaderProgram.lightPosition = [];
+			shaderProgram.lightColor = [];
+			for(var i = 0; i < MAXNUMOFLIGHTS; i++){
+				shaderProgram.lightPosition[i] = gl.getUniformLocation(shaderProgram, "uLightPosition[" + i + "]");
+				shaderProgram.lightColor[i] = gl.getUniformLocation(shaderProgram, "uLightColor[" + i + "]");	
+			}
+			
+			
 		
 		}
 		
