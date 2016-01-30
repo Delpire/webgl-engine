@@ -21,7 +21,7 @@ var game = (function(){
 		);
 	}
 	
-	function start(){
+	function _start(){
 		
 		//Init Render Engine.
 		renderEngine.initEngine();
@@ -46,9 +46,15 @@ var game = (function(){
 		sceneGraph.addNode(sqModel);
 		sceneGraph.addNode(sqModel2);
 		sqModel.addNode(sqModel3);
+        sqModel.setMaterial(0.01, 0.01);
+        sqModel2.setMaterial(0.5, 25);
+        sqModel3.setMaterial(0.01, 0.01);
 		
 		var cameraNode = new CameraNode(sqModel);
 		sceneGraph.addNode(cameraNode);
+        
+        var lightNode = new LightNode( [2, 3, 2], [1, 1, 1] );
+        sceneGraph.addNode(lightNode);
 		
 		updateEngine.setSceneGraph(sceneGraph);
 		renderEngine.setSceneGraph(sceneGraph);
@@ -56,7 +62,7 @@ var game = (function(){
 	}
 	
 	return{
-		start: start
+		start: _start
 	}
 	
 })()

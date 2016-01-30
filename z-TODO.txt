@@ -1,6 +1,7 @@
 //Need to do
 -Create player class and remove player logic from ModelNode
 -Create Light node
+-Separate Texture and Model
 
 //At some point
 -Set up git repo and push code

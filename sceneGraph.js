@@ -15,7 +15,10 @@ SceneGraph.prototype = {
 		
 		function _addNode(node){
 			nodes.push(node)
-			node.setInputEngine(inputEngine);
+            
+            if(node.getNodeType() === 0 || node.getNodeType() == 1){
+                node.setInputEngine(inputEngine);
+            }
 		}
 		
 		function _update(){
@@ -31,16 +34,23 @@ SceneGraph.prototype = {
 			}
 		}
 		
-		function _getModelRenderData(buffer){
+        // Gets the render data for all the nodes that
+        // can be rendered.
+        // Model : NodeType 0
+        // Light : NodeType 2
+		function _getRenderData(renderCache){
 			
 			for (var node of nodes){
 				
 				if(node.getNodeType() === 0){
-					node.getModelRenderData(buffer);
+					node.getModelRenderData(renderCache.models);
 				}
+                else if(node.getNodeType() == 2){
+                    node.getLightRenderData(renderCache.lights);
+                }
 			}
 			
-			return buffer;	
+			return renderCache;	
 		}
 		
 		function _getActiveCamera(){
@@ -55,7 +65,7 @@ SceneGraph.prototype = {
 		return {
 			addNode: _addNode,
 			update: _update,
-			getModelRenderData: _getModelRenderData,
+			getRenderData: _getRenderData,
 			getActiveCamera: _getActiveCamera,
 			setInputEngine: _setInputEngine
 		}
@@ -71,8 +81,8 @@ SceneGraph.prototype = {
 		this.sGraph.update();
 	},
 	
-	getModelRenderData: function(buffer){
-		return this.sGraph.getModelRenderData(buffer);
+	getRenderData: function(buffer){
+		return this.sGraph.getRenderData(buffer);
 	},
 	
 	getActiveCamera: function(){

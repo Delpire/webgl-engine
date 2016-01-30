@@ -7,6 +7,8 @@ RenderEngine.prototype = {
 	
 	rEngine : (function(){
 		
+		var MAXNUMOFLIGHTS = 4;
+		
 		var sceneGraph;
 		var assetEngine;
 		
@@ -16,7 +18,7 @@ RenderEngine.prototype = {
 		var pMatrix = mat4.create();
 		var shaderProgram;
 		
-		var renderCache = [];
+		var renderCache = { models:[], lights:[] };
 		
 		var loadingTexture = false;
 		var tempTexture;
@@ -82,7 +84,9 @@ RenderEngine.prototype = {
 			gl.linkProgram(shaderProgram);
 		
 			if(!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)){
+				alert(gl.getProgramInfoLog(shaderProgram));
 				alert("Could not initialise shaders");
+				
 			}
 		
 			gl.useProgram(shaderProgram);
@@ -99,11 +103,23 @@ RenderEngine.prototype = {
 			shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");
 			gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
 		
-		
 			shaderProgram.nUniform = gl.getUniformLocation(shaderProgram, "uNormalMatrix");
 			shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
 			shaderProgram.vMatrixUniform = gl.getUniformLocation(shaderProgram, "uVMatrix");
 			shaderProgram.mMatrixUniform = gl.getUniformLocation(shaderProgram, "uMMatrix");
+			shaderProgram.invMMatrixUniform = gl.getUniformLocation(shaderProgram, "invUMMatrix");
+			
+            shaderProgram.reflectivity = gl.getUniformLocation(shaderProgram, "uReflectivity");
+            shaderProgram.shineDamper = gl.getUniformLocation(shaderProgram, "uShineDamper");
+            
+			shaderProgram.lightPosition = [];
+			shaderProgram.lightColor = [];
+			for(var i = 0; i < MAXNUMOFLIGHTS; i++){
+				shaderProgram.lightPosition[i] = gl.getUniformLocation(shaderProgram, "uLightPosition[" + i + "]");
+				shaderProgram.lightColor[i] = gl.getUniformLocation(shaderProgram, "uLightColor[" + i + "]");	
+			}
+			
+			
 		
 		}
 		
@@ -188,21 +204,55 @@ RenderEngine.prototype = {
 		
 			return shader;
 		}
+        
+        function _drawModel(model){
+            
+            mMatrix = model.mMatrix;
+            
+            gl.bindBuffer(gl.ARRAY_BUFFER, model.vertexBuffer);
+            gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, model.itemSize, gl.FLOAT, false, 0, 0);
+        
+            gl.bindBuffer(gl.ARRAY_BUFFER, model.normalsBuffer);
+            gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, 3, gl.FLOAT, false, 0, 0);
+        
+            gl.bindBuffer(gl.ARRAY_BUFFER, model.textureCoordinatesBuffer);
+            gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);
+            
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, model.textureBuffer);
+            gl.uniform1i(gl.getUniformLocation(shaderProgram, "uSampler"), 0);
+            
+            gl.uniform1f(shaderProgram.reflectivity, model.material.reflectivity);
+            gl.uniform1f(shaderProgram.shineDamper, model.material.shineDamper);
+        
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.vertexIndiciesBuffer);
+        
+            //Moves matricies to WebGL
+            _setMatrixUniforms();
+            
+            //Draw array of verticies as triangles starting at item 0 and ended at last element of the array.
+            //Change this to gl.TRIANGLE_STRIP to draw quads.
+            gl.drawElements(gl.TRIANGLES, model.numItems, gl.UNSIGNED_SHORT, 0); 
+        }
 		
 		function _setMatrixUniforms(){
-			var normalMatrix = mat4.create();;
+			var normalMatrix = mat4.create();
+			var invUMatrix = mat4.create();
 			mat4.identity(normalMatrix);
+			mat4.identity(invUMatrix);
 			mat4.invert(normalMatrix, mMatrix);
+			mat4.invert(invUMatrix, mMatrix);
 			mat4.transpose(normalMatrix, normalMatrix);
 			gl.uniformMatrix4fv(shaderProgram.nUniform, false, normalMatrix)
 			gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
 			gl.uniformMatrix4fv(shaderProgram.vMatrixUniform, false, vMatrix);
-			gl.uniformMatrix4fv(shaderProgram.mMatrixUniform, false, mMatrix);
+            gl.uniformMatrix4fv(shaderProgram.mMatrixUniform, false, mMatrix);
+			gl.uniformMatrix4fv(shaderProgram.invMMatrixUniform, false, invUMatrix);
 		}
 		
 		function _fillRenderBuffer(){
-			renderCache = [];
-			sceneGraph.getModelRenderData(renderCache);
+			renderCache = { models:[], lights:[] };
+			sceneGraph.getRenderData(renderCache);
 		}
 
 		
@@ -223,38 +273,15 @@ RenderEngine.prototype = {
 			
 			vMatrix = sceneGraph.getActiveCamera().getCameraMatrix();
 			
+            for (var light of renderCache.lights){
+                gl.uniform3fv(shaderProgram.lightPosition[0], light.position);
+                gl.uniform3fv(shaderProgram.lightColor[0], light.color);
+            }           
+            
 			//TODO: FOR EACH RENDER BUFFER
-			for (var model of renderCache){
-				
-				mMatrix = model.mMatrix;
-				
-				gl.bindBuffer(gl.ARRAY_BUFFER, model.vertexBuffer);
-				gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, model.itemSize, gl.FLOAT, false, 0, 0);
-			
-				gl.bindBuffer(gl.ARRAY_BUFFER, model.normalsBuffer);
-				gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, 3, gl.FLOAT, false, 0, 0);
-			
-				gl.bindBuffer(gl.ARRAY_BUFFER, model.textureCoordinatesBuffer);
-				gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);
-			
-				//Colors
-				//gl.bindBuffer(gl.ARRAY_BUFFER, model.colorBuffer);
-				//gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, 4, gl.FLOAT, false, 0, 0);
-			
-				gl.activeTexture(gl.TEXTURE0);
-				gl.bindTexture(gl.TEXTURE_2D, model.textureBuffer);
-				gl.uniform1i(gl.getUniformLocation(shaderProgram, "uSampler"), 0);
-			
-				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.vertexIndiciesBuffer);
-			
-				//Moves matricies to WebGL
-				_setMatrixUniforms();
-			
-				//Draw array of verticies as triangles starting at item 0 and ended at last element of the array.
-				//Change this to gl.TRIANGLE_STRIP to draw quads.
-				gl.drawElements(gl.TRIANGLES, model.numItems, gl.UNSIGNED_SHORT, 0);
+			for (var model of renderCache.models){
+				_drawModel(model);
 			}
-	
 		}
 		
 		function _setSceneGraph(graph){
