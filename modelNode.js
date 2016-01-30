@@ -13,8 +13,8 @@ ModelNode.prototype = {
 		var mMatrix = mat4.create();
 		var mMatrixFinal = mat4.create();
 		
-		var shineDamper;
-		var reflectivity;
+		var shineDamper = 0.05;
+		var reflectivity = 0.05;
 		
 		var inputEngine;
 		
@@ -61,7 +61,9 @@ ModelNode.prototype = {
 				}
 			}
 			
-			buffer.push({mMatrix:mMatrixFinal, itemSize:model.itemSize, numItems:model.numItems, vertexBuffer:model.vertexBuffer, vertexIndiciesBuffer:model.vertexIndiciesBuffer, normalsBuffer:model.normalsBuffer, textureBuffer:model.textureBuffer, textureCoordinatesBuffer:model.textureCoordinatesBuffer, transform:transform});
+			buffer.push({mMatrix:mMatrixFinal, itemSize:model.itemSize, numItems:model.numItems, vertexBuffer:model.vertexBuffer, vertexIndiciesBuffer:model.vertexIndiciesBuffer, normalsBuffer:model.normalsBuffer, textureBuffer:model.textureBuffer, textureCoordinatesBuffer:model.textureCoordinatesBuffer, transform:transform,
+            material:{reflectivity:this.reflectivity, shineDamper:this.shineDamper}
+            });
 			
 			for (var node of nodes){
 				
@@ -120,6 +122,11 @@ ModelNode.prototype = {
 		function _setInputEngine(iEngine){
 			inputEngine = iEngine;
 		}
+        
+        function _setMaterial(reflectivity, shineDamper){
+            this.reflectivity = reflectivity;
+            this.shineDamper = shineDamper;
+        }
 		
 		//Public API
 		return {
@@ -130,14 +137,15 @@ ModelNode.prototype = {
 			getNodeType: _getNodeType,
 			getPosition: _getPosition,
 			setTransform: _setTransform,
-			setInputEngine: _setInputEngine
+			setInputEngine: _setInputEngine,
+            setMaterial: _setMaterial
 		}
 		
 		
 	}),
 	
 	addNode: function(node){
-		this.mNode.addNode(node)	
+		this.mNode.addNode(node);	
 	},
 	
 	getNodeType: function(){
@@ -162,7 +170,9 @@ ModelNode.prototype = {
 		
 	setInputEngine: function(iEngine){
 		this.mNode.setInputEngine(iEngine);
-	}
-	
-	
+	},
+    
+    setMaterial: function(reflectivity, shineDamper){
+        this.mNode.setMaterial(reflectivity, shineDamper);
+    }
 }
