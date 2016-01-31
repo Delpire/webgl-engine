@@ -32,59 +32,9 @@ CameraNode.prototype = {
 		
 		var inputEngine;
 		
-		function _update(t){
+		function _update(t){		
 			
-			var keyStates = inputEngine.getKeyStates();
-			var mouseWheelState = inputEngine.getMouseWheelState();
-			
-			//TODO: Find out how to smooth this out.
-			if(mouseWheelState > 0){
-				if(rho > 3)
-					rho -= 0.5 - (mouseWheelState / 100);
-			}
-			else if(mouseWheelState < 0){
-				if(rho < 10)
-					rho += 0.5 + (mouseWheelState / 100);
-			}
-			
-			if(theta >= TWO_PI || theta <= -TWO_PI)
-				theta = 0;
-			
-			if(keyStates[37] == true){
-				theta -= 0.05;
-			}
-			if(keyStates[39] == true){
-				theta += 0.05;
-			}
-			if(keyStates[38] == true){
-				if(phi < PI_OVER_TWO)
-					phi += 0.05;
-					
-					if(phi >= PI_OVER_TWO)
-						phi = PI_OVER_TWO;
-			}
-			if(keyStates[40] == true){
-				if(phi >= 0)
-					phi -= 0.05;
-					
-					if(phi <= 0)
-						phi = 0;
-			}
-			
-			var a = rho * Math.cos(phi);
-			
-			targetModelPosition = targetModel.getPosition();
-			
-			cameraPosition[0] = a * Math.sin(theta) + targetModelPosition[0];
-			cameraPosition[1] = rho * Math.sin(phi) + targetModelPosition[1];
-			cameraPosition[2] = a * Math.cos(theta) + targetModelPosition[2];
-			
-			cameraTarget[0] = targetModelPosition[0];
-			cameraTarget[1] = targetModelPosition[1];
-			cameraTarget[2] = targetModelPosition[2];
-			
-			_createCameraMatrix();
-			
+			_createCameraMatrix();	
 		}
 		
 		function _createCameraMatrix(){
@@ -123,8 +73,8 @@ CameraNode.prototype = {
 			return cameraMatrix;
 		}
 		
-		function _getIsActive(bool){
-			
+		function _getIsActive(){
+			return isActive;
 		}
 		
 		function _setIsActive(bool){
@@ -134,6 +84,16 @@ CameraNode.prototype = {
 		function _setInputEngine(iEngine){
 			inputEngine = iEngine;
 		}
+        
+        function _setCameras(target, position, up){
+            cameraTarget = target;
+            cameraPosition = position;
+            cameraUp = up;
+        }
+        
+        function _getCameraComponents(){
+            return { position:cameraPosition, target:cameraTarget, up:cameraUp };
+        }
 		
 		//Public API
 		return {
@@ -142,7 +102,9 @@ CameraNode.prototype = {
 			getCameraMatrix: _getCameraMatrix,
 			getIsActive: _getIsActive,
 			setIsActive: _setIsActive,
-			setInputEngine: _setInputEngine
+			setInputEngine: _setInputEngine,
+            setCameras: _setCameras,
+            getCameraComponents: _getCameraComponents
 		}		
 	}),
 	
@@ -168,7 +130,13 @@ CameraNode.prototype = {
 	
 	setInputEngine: function(iEngine){
 		this.cNode.setInputEngine(iEngine);
-	}
-	
-	
+	},
+    
+    setCameras: function(target, position, up){
+        this.cNode.setCameras(target, position, up);
+    },
+    
+    getCameraComponents: function(){
+        return this.cNode.getCameraComponents();
+    }
 }
