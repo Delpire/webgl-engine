@@ -60,6 +60,8 @@ var game = (function(){
         sceneGraph.addNode(playerModel);
         playerModel.setMaterial(0.01, 0.01);
         sceneGraph.addNode(cameras.fps);
+        sceneGraph.addNode(cameras.thirdPerson);
+        sceneGraph.addNode(cameras.free);
 		
 		//var cameraNode = new CameraNode(sqModel);
 		//sceneGraph.addNode(cameraNode);

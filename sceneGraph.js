@@ -27,7 +27,7 @@ SceneGraph.prototype = {
 				node.update(identity);
 				
 				if(node.getNodeType() === 1){
-					if(node.getIsActive){
+					if(node.getIsActive()){
 						activeCamera = node;
 					}
 				}

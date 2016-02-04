@@ -26,14 +26,13 @@ CameraNode.prototype = {
 		
 		var cameraMatrix = mat4.create();
 		
-		var theta = 0;
-		var rho = 5;
-		var phi = 3.14 / 4;
+        var _phi;
+        var _rho;
+        var _theta;
 		
 		var inputEngine;
 		
-		function _update(t){		
-			
+		function _update(t){			
 			_createCameraMatrix();	
 		}
 		
@@ -94,7 +93,19 @@ CameraNode.prototype = {
         function _getCameraComponents(){
             return { position:cameraPosition, target:cameraTarget, up:cameraUp };
         }
-		
+        
+        function _setSphericalCoordinates(rho, phi, theta){
+            //console.log(rho, phi, theta);
+            _rho = rho;
+            _phi = phi;
+            _theta = theta;
+        }	
+        
+        function _getSphericalCoordinates(){
+            return { rho:_rho, phi:_phi, theta:_theta };
+        }
+        
+        	
 		//Public API
 		return {
 			update: _update,
@@ -104,7 +115,9 @@ CameraNode.prototype = {
 			setIsActive: _setIsActive,
 			setInputEngine: _setInputEngine,
             setCameras: _setCameras,
-            getCameraComponents: _getCameraComponents
+            getCameraComponents: _getCameraComponents,
+            setSphericalCoordinates: _setSphericalCoordinates,
+            getSphericalCoordinates: _getSphericalCoordinates
 		}		
 	}),
 	
@@ -138,5 +151,13 @@ CameraNode.prototype = {
     
     getCameraComponents: function(){
         return this.cNode.getCameraComponents();
+    },
+    
+    setSphericalCoordinates: function(rho, phi, theta){
+        this.cNode.setSphericalCoordinates(rho, phi, theta);
+    },
+    
+    getSphericalCoordinates: function(){
+        return this.cNode.getSphericalCoordinates();
     }
 }

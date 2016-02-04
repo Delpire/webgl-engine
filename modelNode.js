@@ -104,6 +104,14 @@ ModelNode.prototype = {
 		function _getPosition(){
 			return [transform.x, transform.y, transform.z]
 		}
+        
+        function _getRotation(){
+			return [transform.rx, transform.ry, transform.rz]
+		}
+        
+        function _getScale(){
+			return [transform.sx, transform.sy, transform.sz]
+		}
 		
 		function _addNode(node){
 			nodes.push(node);
@@ -130,6 +138,8 @@ ModelNode.prototype = {
 			getTransform: _getTransform,
 			getNodeType: _getNodeType,
 			getPosition: _getPosition,
+            getRotation: _getRotation,
+            getScale: _getScale,
 			setTransform: _setTransform,
 			setInputEngine: _setInputEngine,
             setMaterial: _setMaterial,
@@ -158,6 +168,15 @@ ModelNode.prototype = {
 	
 	getPosition: function(){
 		return this.mNode.getPosition();	
+	},
+
+	
+	getRotation: function(){
+		return this.mNode.getRotation();	
+	},
+	
+	getScale: function(){
+		return this.mNode.getScale();	
 	},
 	
 	setTransform: function(x, y, z, rx, ry, rz, sx, sy, sz){
