@@ -66,7 +66,7 @@ var game = (function(){
 		//var cameraNode = new CameraNode(sqModel);
 		//sceneGraph.addNode(cameraNode);
         
-        var lightNode = new LightNode( [2, 3, 2], [1, 1, 1] );
+        var lightNode = new LightNode( [2, 10, 2], [1, 1, 1] );
         sceneGraph.addNode(lightNode);
 		
 		updateEngine.setSceneGraph(sceneGraph);

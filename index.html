@@ -22,7 +22,7 @@
 			mediump vec3 unitNormal = normalize(vNormal);
 			mediump vec3 unitLight = normalize(vLight);
 			
-			mediump float brightness = max(dot(unitNormal, unitLight), 0.0);
+			mediump float brightness = max(dot(unitNormal, unitLight), 0.0) + 0.05;
 			mediump vec3 diffuse = brightness * vLightColor;
 		
 			mediump vec3 unitVectorToCamera = normalize(vToCamera);

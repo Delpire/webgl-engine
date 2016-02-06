@@ -17,7 +17,7 @@ LightNode.prototype = {
             temp++
             if(temp > 100)
             {
-                _position = [Math.random() * 10, Math.random() * 10, Math.random() * 10];
+                //_position = [Math.random() * 10, Math.random() * 10, Math.random() * 10];
                 temp = 0;    
             }
             
