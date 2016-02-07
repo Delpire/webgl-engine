@@ -9,6 +9,8 @@ ModelNode.prototype = {
 		var nodes = [];
 		var nodeType = 0;
 		var model = m;
+        
+        var willRender = true;
 		
 		var mMatrix = mat4.create();
 		var mMatrixFinal = mat4.create();
@@ -19,16 +21,9 @@ ModelNode.prototype = {
 		var inputEngine;
 		
 		//TODO: Replace this with ArrayBuffer
-		var transform = {x:0.0, y:0.0, z:-5.0, rx:0.0, ry:0.0, rz:0.0, sx:0.0, sy:0.0, sz:0.0};
+		var transform = {x:0.0, y:0.0, z:0.0, rx:0.0, ry:0.0, rz:0.0, sx:0.0, sy:0.0, sz:0.0};
 		
 		function _update(tMatrix){
-			
-			if(transform.sx == 1){
-				transform.ry += 0.05;
-			}
-			if(transform.sx == 0.5){
-				transform.rx += 0.05;
-			}
 			
 			_createMMatrix(tMatrix);
 			
@@ -43,27 +38,11 @@ ModelNode.prototype = {
 		
 		function _getModelRenderData(buffer){
 			
-			//TODO: THIS IS A HACK! MAKE A PLAYER CLASS
-			if(transform.sx === 1){
-				var keyStates = inputEngine.getKeyStates();
-				
-				if(keyStates[87] == true){
-					transform.x += 0.5;
-				}
-				if(keyStates[83] == true){
-					transform.x -= 0.5;
-				}
-				if(keyStates[65] == true){
-					transform.z -= 0.5;
-				}
-				if(keyStates[68] == true){
-					transform.z += 0.5;
-				}
-			}
-			
-			buffer.push({mMatrix:mMatrixFinal, itemSize:model.itemSize, numItems:model.numItems, vertexBuffer:model.vertexBuffer, vertexIndiciesBuffer:model.vertexIndiciesBuffer, normalsBuffer:model.normalsBuffer, textureBuffer:model.textureBuffer, textureCoordinatesBuffer:model.textureCoordinatesBuffer, transform:transform,
-            material:{reflectivity:this.reflectivity, shineDamper:this.shineDamper}
-            });
+            if(willRender){
+                buffer.push({mMatrix:mMatrixFinal, itemSize:model.itemSize, numItems:model.numItems, vertexBuffer:model.vertexBuffer, vertexIndiciesBuffer:model.vertexIndiciesBuffer, normalsBuffer:model.normalsBuffer, textureBuffer:model.textureBuffer,                textureCoordinatesBuffer:model.textureCoordinatesBuffer, transform:transform,
+                material:{reflectivity:this.reflectivity, shineDamper:this.shineDamper}
+                });
+            }
 			
 			for (var node of nodes){
 				
@@ -108,11 +87,30 @@ ModelNode.prototype = {
 			transform.sx = sx;
 			transform.sy = sy;
 			transform.sz = sz;
-			
+		}
+        
+        function _addTransform(x, y, z, rx, ry, rz, sx, sy, sz){
+			transform.x += x;
+			transform.y += y;
+			transform.z += z;
+			transform.rx += rx;
+			transform.ry += ry;
+			transform.rz += rz;
+			transform.sx += sx;
+			transform.sy += sy;
+			transform.sz += sz;
 		}
 		
 		function _getPosition(){
 			return [transform.x, transform.y, transform.z]
+		}
+        
+        function _getRotation(){
+			return [transform.rx, transform.ry, transform.rz]
+		}
+        
+        function _getScale(){
+			return [transform.sx, transform.sy, transform.sz]
 		}
 		
 		function _addNode(node){
@@ -127,6 +125,10 @@ ModelNode.prototype = {
             this.reflectivity = reflectivity;
             this.shineDamper = shineDamper;
         }
+        
+        function _setWillRender(bool){
+            willRender = bool;
+        }
 		
 		//Public API
 		return {
@@ -136,9 +138,13 @@ ModelNode.prototype = {
 			getTransform: _getTransform,
 			getNodeType: _getNodeType,
 			getPosition: _getPosition,
+            getRotation: _getRotation,
+            getScale: _getScale,
 			setTransform: _setTransform,
 			setInputEngine: _setInputEngine,
-            setMaterial: _setMaterial
+            setMaterial: _setMaterial,
+            setWillRender: _setWillRender,
+            addTransform: _addTransform
 		}
 		
 		
@@ -163,10 +169,23 @@ ModelNode.prototype = {
 	getPosition: function(){
 		return this.mNode.getPosition();	
 	},
+
+	
+	getRotation: function(){
+		return this.mNode.getRotation();	
+	},
+	
+	getScale: function(){
+		return this.mNode.getScale();	
+	},
 	
 	setTransform: function(x, y, z, rx, ry, rz, sx, sy, sz){
 		this.mNode.setTransform(x, y, z, rx, ry, rz, sx, sy, sz);
 	},
+    
+    addTransform: function(x, y, z, rx, ry, rz, sx, sy, sz){
+        this.mNode.addTransform(x, y, z, rx, ry, rz, sx, sy, sz);
+    },
 		
 	setInputEngine: function(iEngine){
 		this.mNode.setInputEngine(iEngine);
@@ -174,5 +193,10 @@ ModelNode.prototype = {
     
     setMaterial: function(reflectivity, shineDamper){
         this.mNode.setMaterial(reflectivity, shineDamper);
+    },
+    
+    setWillRender: function(bool){
+        this.mNode.setWillRender(bool);
     }
+    
 }
