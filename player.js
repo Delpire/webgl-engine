@@ -209,7 +209,7 @@ Player.prototype.init = function(inputEngine, model){
             
             // Change theta based on how much the mouse has moved left or right.
             if(!isNaN(mouseDelta.dx) && Math.abs(mouseDelta.dx) > 0.8){
-                _theta = _theta - rotationSpeed * mouseDelta.dx;
+                _theta = _theta + rotationSpeed * mouseDelta.dx;
                 _theta = _clampTheta(_theta);
             }
             
@@ -222,9 +222,9 @@ Player.prototype.init = function(inputEngine, model){
             // Calculate the direction vector.
             // This vector represents the direction the camera is facing.
             var a = Math.cos(phi);
-            var xd = a * Math.sin(_theta);
-            var yd = a * Math.sin(phi);
-            var zd = a * Math.cos(_theta);
+            var xd = Math.cos(_theta);
+            var yd = Math.sin(phi);
+            var zd = Math.sin(_theta);
             
             model.setTransform(modelPosition[0], modelPosition[1], modelPosition[2],
                     modelRotation[0], _theta, modelRotation[2],
@@ -236,6 +236,7 @@ Player.prototype.init = function(inputEngine, model){
             // D = 68
             if(keyStates[87] == true){    
                 model.addTransform(0.25 * xd, 0, 0.25 * zd, 0, 0, 0, 0, 0, 0);
+                console.log(phi);
             }
             if(keyStates[65] == true){ 
                 model.addTransform(0.25 * zd, 0, 0.25 * -xd, 0, 0, 0, 0, 0, 0);
@@ -248,7 +249,7 @@ Player.prototype.init = function(inputEngine, model){
             }
               
             // Calculate the camera target and camera position.
-            var target = vec3.fromValues(xd + modelPosition[0], yd + modelPosition[1] + height, zd + modelPosition[2]);    
+            var target = vec3.fromValues((a * xd) + modelPosition[0], yd + modelPosition[1] + height, (a* zd) + modelPosition[2]);    
             var position = vec3.fromValues(modelPosition[0], modelPosition[1] + height, modelPosition[2]);
 		
             // Update the camera's target, position, up vector, and spherical coordinates.
@@ -341,7 +342,7 @@ Player.prototype.init = function(inputEngine, model){
             
             // Change theta based on how much the mouse has moved left or right.
             if(!isNaN(mouseDelta.dx) && Math.abs(mouseDelta.dx) > 0.8){
-                _theta = _theta - rotationSpeed * mouseDelta.dx;
+                _theta = _theta + rotationSpeed * mouseDelta.dx;
                 _theta = _clampTheta(_theta);
             }
             
@@ -354,27 +355,27 @@ Player.prototype.init = function(inputEngine, model){
             // Calculate the direction vector.
             // This vector represents the direction the camera is facing.
             var a = Math.cos(phi);
-            var xd = a * Math.sin(_theta);
-            var yd = a * Math.sin(phi);
-            var zd = a * Math.cos(_theta); 
+            var xd = Math.cos(_theta);
+            var yd = Math.sin(phi);
+            var zd = Math.sin(_theta); 
             
             // W = 87
             // A = 65
             // S = 83
             // D = 68
             if(keyStates[87] == true){
-                x += 0.25 * xd; 
+                x += 0.25 * a * xd; 
                 y += 0.25 * yd;
-                z += 0.25 * zd;    
+                z += 0.25 * a * zd;    
             }
             if(keyStates[65] == true){
                 x += 0.25 * zd; 
                 z += 0.25 * -xd;   
             }
             if(keyStates[83] == true){
-                x += 0.25 * -xd; 
+                x += 0.25 * a * -xd; 
                 y += 0.25 * -yd;
-                z += 0.25 * -zd;
+                z += 0.25 * a * -zd;
             }
             if(keyStates[68] == true){
                 x += 0.25 * -zd; 
@@ -382,7 +383,7 @@ Player.prototype.init = function(inputEngine, model){
             }   
               
             // Calculate the camera target and camera position.
-            var target = vec3.fromValues(xd + x, yd + y, zd + z);    
+            var target = vec3.fromValues((a * xd) + x, yd + y, (a * zd) + z);    
             var position = vec3.fromValues(x, y, z);
 		
             // Update the camera's target, position, up vector, and spherical coordinates.
