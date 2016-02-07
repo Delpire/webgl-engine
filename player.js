@@ -8,7 +8,7 @@ Player.prototype.init = function(inputEngine, model){
 		
         var PI_OVER_TWO = 3.14 / 2;
         var TWO_PI = 3.14 * 2;
-        var PI = 3.14
+        var PI = 3.14;
         
         var model;
         var modelPosition;
@@ -27,7 +27,7 @@ Player.prototype.init = function(inputEngine, model){
          
         var rotationSpeed = 0.02;
         
-        var inputEngine
+        var inputEngine;
         
         var _theta;
 		
@@ -75,9 +75,9 @@ Player.prototype.init = function(inputEngine, model){
 			
             var a = rho * Math.cos(phi);
             
-			var x = a * Math.sin(_theta) + modelPosition[0];
-			var y = rho * Math.sin(phi) + modelPosition[1];
-			var z = a * Math.cos(_theta) + modelPosition[2];
+            var x = a * Math.sin(_theta) + modelPosition[0];
+            var y = rho * Math.sin(phi) + modelPosition[1];
+            var z = a * Math.cos(_theta) + modelPosition[2];
             
             var target = vec3.fromValues(modelPosition[0], modelPosition[1], modelPosition[2]);
             var position = vec3.fromValues(x, y, z);
@@ -201,7 +201,6 @@ Player.prototype.init = function(inputEngine, model){
             // Get the spherical coordinates of the camera.
             var sphericalCoordinates = fpsCamera.getSphericalCoordinates();
             var phi = sphericalCoordinates.phi;
-            //var theta = sphericalCoordinates.theta;
             
             // Get the mouse and keyboard inputs.
             var keyStates = inputEngine.getKeyStates();
@@ -236,7 +235,6 @@ Player.prototype.init = function(inputEngine, model){
             // D = 68
             if(keyStates[87] == true){    
                 model.addTransform(0.25 * xd, 0, 0.25 * zd, 0, 0, 0, 0, 0, 0);
-                console.log(phi);
             }
             if(keyStates[65] == true){ 
                 model.addTransform(0.25 * zd, 0, 0.25 * -xd, 0, 0, 0, 0, 0, 0);
@@ -263,7 +261,6 @@ Player.prototype.init = function(inputEngine, model){
             var sphericalCoordinates = thirdPersonCamera.getSphericalCoordinates();
             var rho = sphericalCoordinates.rho;
             var phi = sphericalCoordinates.phi;
-            //var theta = sphericalCoordinates.theta;
             
             // Get the mouse and keyboard inputs.
             var keyStates = inputEngine.getKeyStates();
@@ -271,7 +268,7 @@ Player.prototype.init = function(inputEngine, model){
             
             // Change theta based on how much the mouse has moved left or right.
             if(!isNaN(mouseDelta.dx) && Math.abs(mouseDelta.dx) > 0.8){
-                _theta = _theta - rotationSpeed * mouseDelta.dx;
+                _theta = _theta + rotationSpeed * mouseDelta.dx;
                 _theta = _clampTheta(_theta);
             }
             
@@ -284,12 +281,12 @@ Player.prototype.init = function(inputEngine, model){
             // Calculate the direction vector.
             // This vector represents the direction the camera is facing.
             var a = Math.cos(phi);
-            var xd = Math.sin(_theta);
+            var xd = Math.cos(_theta);
             var yd = Math.sin(phi);
-            var zd = Math.cos(_theta);
+            var zd = Math.sin(_theta);
             
             model.setTransform(modelPosition[0], modelPosition[1], modelPosition[2],
-                    modelRotation[0], _theta, modelRotation[2],
+                    modelRotation[0], -_theta, modelRotation[2],
                     modelScale[0], modelScale[1], modelScale[2]);
             
             // W = 87
@@ -309,12 +306,10 @@ Player.prototype.init = function(inputEngine, model){
             if(keyStates[68] == true){
                 model.addTransform(0.25 * zd, 0, 0.25 * -xd, 0, 0, 0, 0, 0, 0);    
             }  
-            
-            var a = rho * Math.cos(phi);
-            
-			var x = a * Math.sin(_theta) + modelPosition[0];
-			var y = rho * Math.sin(phi) + modelPosition[1];
-			var z = a * Math.cos(_theta) + modelPosition[2];
+                      
+			var x = (rho * a * Math.cos(_theta)) + modelPosition[0];
+			var y = (rho * Math.sin(phi)) + modelPosition[1];
+			var z = (rho * a * Math.sin(_theta)) + modelPosition[2];
             
             var target = vec3.fromValues(modelPosition[0], modelPosition[1], modelPosition[2]);
             var position = vec3.fromValues(x, y, z);
