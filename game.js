@@ -62,12 +62,15 @@ var game = (function(){
         sceneGraph.addNode(cameras.fps);
         sceneGraph.addNode(cameras.thirdPerson);
         sceneGraph.addNode(cameras.free);
-		
-		//var cameraNode = new CameraNode(sqModel);
-		//sceneGraph.addNode(cameraNode);
         
-        var lightNode = new LightNode( [2, 10, 2], [1, 1, 1] );
-        sceneGraph.addNode(lightNode);
+        var lightNode1 = new LightNode( [2, 15, 2], [0.3, 0.3, 0.3] );
+        var lightNode2 = new LightNode( [10, 15, 3], [0.3, 0, 0] );
+        var lightNode3 = new LightNode( [-5, 15, -5], [0, 0.3, 0] );
+        var lightNode4 = new LightNode( [-10, 15, 15], [0, 0, 0.3] );
+        //sceneGraph.addNode(lightNode1);
+        sceneGraph.addNode(lightNode2);
+        //sceneGraph.addNode(lightNode3);
+        sceneGraph.addNode(lightNode4);
 		
 		updateEngine.setSceneGraph(sceneGraph);
         updateEngine.addPlayer(player);

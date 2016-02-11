@@ -112,6 +112,8 @@ RenderEngine.prototype = {
             shaderProgram.reflectivity = gl.getUniformLocation(shaderProgram, "uReflectivity");
             shaderProgram.shineDamper = gl.getUniformLocation(shaderProgram, "uShineDamper");
             
+            shaderProgram.numberOfLights = gl.getUniformLocation(shaderProgram, "uNumberOfLights");
+            
 			shaderProgram.lightPosition = [];
 			shaderProgram.lightColor = [];
 			for(var i = 0; i < MAXNUMOFLIGHTS; i++){
@@ -273,10 +275,12 @@ RenderEngine.prototype = {
 			
 			vMatrix = sceneGraph.getActiveCamera().getCameraMatrix();
 			
-            for (var light of renderCache.lights){
-                gl.uniform3fv(shaderProgram.lightPosition[0], light.position);
-                gl.uniform3fv(shaderProgram.lightColor[0], light.color);
+            for (var i = 0; i < renderCache.lights.length; i++){
+                gl.uniform3fv(shaderProgram.lightPosition[i], renderCache.lights[i].position);
+                gl.uniform3fv(shaderProgram.lightColor[i], renderCache.lights[i].color);
             }           
+            
+            gl.uniform1i(shaderProgram.numberOfLights, renderCache.lights.length)
             
 			//TODO: FOR EACH RENDER BUFFER
 			for (var model of renderCache.models){

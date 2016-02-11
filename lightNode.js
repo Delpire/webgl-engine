@@ -14,14 +14,7 @@ LightNode.prototype = {
         var temp = 0;
 		
 		function _update(){
-            temp++
-            if(temp > 100)
-            {
-                //_position = [Math.random() * 10, Math.random() * 10, Math.random() * 10];
-                temp = 0;    
-            }
-            
-			//_color = [Math.random(), Math.random(), Math.random()];
+
 		}
         
         function _getLightRenderData(buffer){
