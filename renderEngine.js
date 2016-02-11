@@ -11,17 +11,26 @@ RenderEngine.prototype = {
 		
 		var sceneGraph;
 		var assetEngine;
+        var guiEngine;
 		
 		var gl;
+        
+        // MVP Matricies.
 		var mMatrix = mat4.create();
 		var vMatrix = mat4.create();
 		var pMatrix = mat4.create();
+        
+        // Shader Programs
 		var shaderProgram;
+        var guiShaderProgram;
 		
+        // Contains all the models and lights in the scene.
 		var renderCache = { models:[], lights:[] };
 		
-		var loadingTexture = false;
-		var tempTexture;
+        var guiElements = [];
+        
+		var loadingTexture = 0;
+        var isLoadingTexture = false;
 		
 		function _setupWebGl(){
 			
@@ -39,7 +48,7 @@ RenderEngine.prototype = {
 			gl.depthFunc(gl.LEQUAL);
 	
 			//Clear color and depth buffer.
-			gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+			gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 			
 			//Set up perspective camera.
 			mat4.perspective(pMatrix, 45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
@@ -66,22 +75,26 @@ RenderEngine.prototype = {
 		
 		function _initShaders(){
 
-			// var fragmentShader = getShader(gl, fragmentShaderScript);
-			// var vertexShader = getShader(gl, vertexShaderScript);
-		
 			var fragmentShader = _getShader(gl, "shader-fs");
 			var vertexShader = _getShader(gl, "shader-vs");
+            
+            var guiFragmentShader = _getShader(gl, "gui-shader-fs");
+			var guiVertexShader = _getShader(gl, "gui-shader-vs");
 		
 			//Create a WebGL program. This is got that runs on WebGL.
 			//Each program can ONLY have 1 Fragment Shader and 1 Vertex Shader
 			shaderProgram = gl.createProgram();
+            guiShaderProgram = gl.createProgram();
 		
 			//Attach shadders to WebGL
 			gl.attachShader(shaderProgram, vertexShader);
 			gl.attachShader(shaderProgram, fragmentShader);
+            gl.attachShader(guiShaderProgram, guiFragmentShader);
+			gl.attachShader(guiShaderProgram, guiVertexShader);
 		
 			//Link the program.
 			gl.linkProgram(shaderProgram);
+            gl.linkProgram(guiShaderProgram);
 		
 			if(!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)){
 				alert(gl.getProgramInfoLog(shaderProgram));
@@ -118,9 +131,17 @@ RenderEngine.prototype = {
 				shaderProgram.lightPosition[i] = gl.getUniformLocation(shaderProgram, "uLightPosition[" + i + "]");
 				shaderProgram.lightColor[i] = gl.getUniformLocation(shaderProgram, "uLightColor[" + i + "]");	
 			}
-			
-			
-		
+            
+            gl.useProgram(guiShaderProgram);
+            
+            guiShaderProgram.vertexPositionAttribute = gl.getAttribLocation(guiShaderProgram, "aGuiVertexPosition");
+            gl.enableVertexAttribArray(guiShaderProgram.vertexPositionAttribute);
+            
+            guiShaderProgram.textureCoordAttribute = gl.getAttribLocation(guiShaderProgram, "aGuiTextureCoord");
+            gl.enableVertexAttribArray(guiShaderProgram.textureCoordAttribute);
+            
+            guiShaderProgram.guiPosition = gl.getUniformLocation(guiShaderProgram, "uGuiPosition");
+            		
 		}
 		
 		function _createArrayBuffer(array){
@@ -146,21 +167,26 @@ RenderEngine.prototype = {
 		}
 		
 		function _createTexture(src){
-			
-			tempTexture = gl.createTexture();
+			          
+            isLoadingTexture = true;          
+                      
+			var tempTexture = gl.createTexture();
 
-			loadingTexture = true;
+			loadingTexture++;
 
 			var image = new Image();
-			//image.crossOrigin = "anonymous";
 			image.onload = function(){ _createTextureBuffer(image, tempTexture)}
 			image.src = src;
-			
+            
 			return tempTexture;
 		}
 		
 		function _createTextureBuffer(image, texture){
 			
+            console.log(image.src);
+            console.log(image.width, image.height);
+            console.log((128 & (128 - 1)))
+            
 			gl.bindTexture(gl.TEXTURE_2D, texture);
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -168,7 +194,9 @@ RenderEngine.prototype = {
 			gl.generateMipmap(gl.TEXTURE_2D);
 			gl.bindTexture(gl.TEXTURE_2D, null);
 			
-			loadingTexture = false;
+            isLoadingTexture = false;
+            
+			loadingTexture--;
 		}
 		
 		function _getShader(gl, id) {
@@ -206,7 +234,7 @@ RenderEngine.prototype = {
 		}
         
         function _drawModel(model){
-            
+             
             mMatrix = model.mMatrix;
             
             gl.bindBuffer(gl.ARRAY_BUFFER, model.vertexBuffer);
@@ -218,7 +246,7 @@ RenderEngine.prototype = {
             gl.bindBuffer(gl.ARRAY_BUFFER, model.textureCoordinatesBuffer);
             gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);
             
-            gl.activeTexture(gl.TEXTURE0);
+            gl.activeTexture(gl.TEXTURE0 + model.textureIndex);
             gl.bindTexture(gl.TEXTURE_2D, model.textureBuffer);
             gl.uniform1i(gl.getUniformLocation(shaderProgram, "uSampler"), 0);
             
@@ -233,6 +261,27 @@ RenderEngine.prototype = {
             //Draw array of verticies as triangles starting at item 0 and ended at last element of the array.
             //Change this to gl.TRIANGLE_STRIP to draw quads.
             gl.drawElements(gl.TRIANGLES, model.numItems, gl.UNSIGNED_SHORT, 0); 
+        }     
+           
+        function _drawGui(guiElement){
+             
+            gl.bindBuffer(gl.ARRAY_BUFFER, guiElement.VertexBuffer);
+            gl.vertexAttribPointer(guiShaderProgram.vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+        
+            gl.bindBuffer(gl.ARRAY_BUFFER, guiElement.TextureCoordinatesBuffer);
+            gl.vertexAttribPointer(guiShaderProgram.textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);       
+        
+            gl.activeTexture(gl.TEXTURE0 + guiElement.TextureIndex);
+            gl.bindTexture(gl.TEXTURE_2D, guiElement.TextureBuffer);
+            gl.uniform1i(gl.getUniformLocation(guiShaderProgram, "uGuiSampler"), 1);
+        
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, guiElement.IndexBuffer);
+        
+            gl.uniform2fv(guiShaderProgram.guiPosition, guiElement.Position);
+            
+            //Draw array of verticies as triangles starting at item 0 and ended at last element of the array.
+            //Change this to gl.TRIANGLE_STRIP to draw quads.
+            gl.drawElements(gl.TRIANGLE_STRIP, 4, gl.UNSIGNED_SHORT, 0); 
         }
 		
 		function _setMatrixUniforms(){
@@ -243,7 +292,7 @@ RenderEngine.prototype = {
 			mat4.invert(normalMatrix, mMatrix);
 			mat4.invert(invUMatrix, mMatrix);
 			mat4.transpose(normalMatrix, normalMatrix);
-			gl.uniformMatrix4fv(shaderProgram.nUniform, false, normalMatrix)
+			gl.uniformMatrix4fv(shaderProgram.nUniform, false, normalMatrix);
 			gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
 			gl.uniformMatrix4fv(shaderProgram.vMatrixUniform, false, vMatrix);
             gl.uniformMatrix4fv(shaderProgram.mMatrixUniform, false, mMatrix);
@@ -258,9 +307,9 @@ RenderEngine.prototype = {
 		
 		function _render(){
 			
-			//TODO: Move this to UPDATE ^^^^
+			gl.enable(gl.DEPTH_TEST);
 			
-			if(loadingTexture)
+			if(loadingTexture > 0)
 				return;
 			
 			//Tell WebGL about the size of the canvas.
@@ -273,6 +322,8 @@ RenderEngine.prototype = {
 			
 			vMatrix = sceneGraph.getActiveCamera().getCameraMatrix();
 			
+            gl.useProgram(shaderProgram);
+            
             for (var light of renderCache.lights){
                 gl.uniform3fv(shaderProgram.lightPosition[0], light.position);
                 gl.uniform3fv(shaderProgram.lightColor[0], light.color);
@@ -282,6 +333,18 @@ RenderEngine.prototype = {
 			for (var model of renderCache.models){
 				_drawModel(model);
 			}
+            
+            gl.useProgram(guiShaderProgram);
+            
+            gl.disable(gl.DEPTH_TEST);
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+            var guiElements = guiEngine.getGuiElements();
+            
+            for (var guiElement of guiElements){
+                _drawGui(guiElement);
+            }
 		}
 		
 		function _setSceneGraph(graph){
@@ -291,6 +354,10 @@ RenderEngine.prototype = {
 		function _setAssetEngine(engine){
 			assetEngine = engine;
 		}
+        
+        function _setGuiEngine(engine){
+            guiEngine = engine;
+        }
 		
 		//Public API
 		return {
@@ -298,6 +365,7 @@ RenderEngine.prototype = {
 			render: _render,
 			setSceneGraph: _setSceneGraph,
 			setAssetEngine: _setAssetEngine,
+            setGuiEngine: _setGuiEngine,
 			createArrayBuffer: _createArrayBuffer,
 			createElementArrayBuffer: _createElementArrayBuffer,
 			createTexture: _createTexture,
@@ -321,6 +389,10 @@ RenderEngine.prototype = {
 	//These models should be accessable by the RenderEngine from the AssetManager
 	setAssetEngine: function(engine){
 		this.rEngine.setAssetEngine(engine);
+	},
+    
+    setGuiEngine: function(engine){
+		this.rEngine.setGuiEngine(engine);
 	},
 	
 	createArrayBuffer: function(array){

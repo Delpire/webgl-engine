@@ -7,6 +7,8 @@ AssetEngine.prototype = {
 		var renderEngine;
 		var models = [];
 		var textures = [];
+        
+        var _textureIndex = 0;
 		
 		function _loadModel(n, verts, indicies, normals, textureName, textureCoordinates, size){
 					
@@ -18,9 +20,11 @@ AssetEngine.prototype = {
 			var nBuffer = renderEngine.createArrayBuffer(normals);
 			var iBuffer = renderEngine.createElementArrayBuffer(indicies);
 			
-			var tBuffer = _getTexture(textureName).textureBuffer;
+			var texture = _getTexture(textureName);
+            var tBuffer = texture.textureBuffer;
 
-			models.push({name:n, vertexBuffer:vBuffer, vertexIndiciesBuffer:iBuffer, normalsBuffer:nBuffer, textureBuffer:tBuffer, textureCoordinatesBuffer:tcBuffer, itemSize:size, numItems:indicies.length});
+			models.push({name:n, vertexBuffer:vBuffer, vertexIndiciesBuffer:iBuffer, normalsBuffer:nBuffer, textureBuffer:tBuffer, 
+                        textureCoordinatesBuffer:tcBuffer, itemSize:size, numItems:indicies.length, textureIndex:texture.textureIndex});
 		}
 		
 		function _getModel(n){
@@ -37,7 +41,9 @@ AssetEngine.prototype = {
 			
 			var tBuffer = renderEngine.createTexture(src);
 			
-			textures.push({name:name, textureBuffer:tBuffer})
+			textures.push({name:name, textureIndex:_textureIndex, textureBuffer:tBuffer});
+            
+            _textureIndex++;
 		}
 		
 		function _getTexture(name){
@@ -86,7 +92,8 @@ AssetEngine.prototype = {
 			loadModel: _loadModel,
 			getModel: _getModel,
 			setRenderEngine: _setRenderEngine,
-			loadTexture: _loadTexture
+			loadTexture: _loadTexture,
+            getTexture: _getTexture,
 		}
 		
 	})(),
@@ -105,5 +112,9 @@ AssetEngine.prototype = {
 	
 	setRenderEngine: function(engine){
 		this.aEngine.setRenderEngine(engine)
-	}
+	},
+    
+    getTexture: function(name){
+		return this.aEngine.getTexture(name);
+	},
 }

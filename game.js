@@ -5,6 +5,7 @@ var game = (function(){
 	var renderEngine = new RenderEngine();
 	var assetEngine = new AssetEngine();
 	var inputEngine = new InputEngine();
+    var guiEngine = new GuiEngine(renderEngine, assetEngine).api;
 	
 	function _loop(time){
 		
@@ -31,10 +32,16 @@ var game = (function(){
 		assetEngine.setRenderEngine(renderEngine);
 		
 		assetEngine.loadTexture("cubeTexture", cubeTexture);
+        assetEngine.loadTexture("crosshair", crossHair);
 		assetEngine.loadModel("square", cubeVertices, cubeVertexIndices, cubeVertexNormals, "cubeTexture", cubeTextureCoordinates, 3);
 		assetEngine.loadModel("plane", planeVertices, planeVertexIndicies, planeVertexNormals, "cubeTexture", planeTextureCoordinates, 3);
-
+        
 		sceneGraph.setInputEngine(inputEngine);
+        
+        var guiElement = new GuiElement("crosshair", vec2.fromValues(0, 0), .1, .1).api; 
+        guiEngine.addGuiElement(guiElement);
+
+        renderEngine.setGuiEngine(guiEngine)
 
 		//Set up square model.
 		var sqModel = new ModelNode(assetEngine.getModel("square"));

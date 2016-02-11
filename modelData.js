@@ -73,7 +73,8 @@ var cubeVertexIndices = [
   20, 21, 22,     20, 22, 23    // left
 ];
 
-var cubeTexture = "wood2.jpg"
+var cubeTexture = "wood2.jpg";
+var crossHair = "crosshair.png";
 
 var cubeTextureCoordinates = [
     // Front

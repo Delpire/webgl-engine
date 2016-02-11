@@ -40,7 +40,7 @@ ModelNode.prototype = {
 			
             if(willRender){
                 buffer.push({mMatrix:mMatrixFinal, itemSize:model.itemSize, numItems:model.numItems, vertexBuffer:model.vertexBuffer, vertexIndiciesBuffer:model.vertexIndiciesBuffer, normalsBuffer:model.normalsBuffer, textureBuffer:model.textureBuffer,                textureCoordinatesBuffer:model.textureCoordinatesBuffer, transform:transform,
-                material:{reflectivity:this.reflectivity, shineDamper:this.shineDamper}
+                material:{reflectivity:this.reflectivity, shineDamper:this.shineDamper}, textureIndex:model.textureIndex,
                 });
             }
 			
