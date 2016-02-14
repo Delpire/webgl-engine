@@ -37,7 +37,9 @@ SceneGraph.prototype = {
         // Gets the render data for all the nodes that
         // can be rendered.
         // Model : NodeType 0
-        // Light : NodeType 2
+        // Point Light : NodeType 2
+        // Directional Light: NodeType 3
+        // Spot Light: NodeType 4
 		function _getRenderData(renderCache){
 			
 			for (var node of nodes){
@@ -45,8 +47,11 @@ SceneGraph.prototype = {
 				if(node.getNodeType() === 0){
 					node.getModelRenderData(renderCache.models);
 				}
-                else if(node.getNodeType() == 2){
+                else if(node.getNodeType() === 2){
                     node.getLightRenderData(renderCache.lights);
+                }
+                else if(node.getNodeType() === 3) {
+                    node.getLightRenderData(renderCache.directional_light);
                 }
 			}
 			

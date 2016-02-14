@@ -63,14 +63,17 @@ var game = (function(){
         sceneGraph.addNode(cameras.thirdPerson);
         sceneGraph.addNode(cameras.free);
         
-        var lightNode1 = new LightNode( [2, 15, 2], [0.3, 0.3, 0.3] );
-        var lightNode2 = new LightNode( [10, 15, 3], [0.3, 0, 0] );
-        var lightNode3 = new LightNode( [-5, 15, -5], [0, 0.3, 0] );
-        var lightNode4 = new LightNode( [-10, 15, 15], [0, 0, 0.3] );
-        //sceneGraph.addNode(lightNode1);
-        sceneGraph.addNode(lightNode2);
-        //sceneGraph.addNode(lightNode3);
-        sceneGraph.addNode(lightNode4);
+        var lightNode1 = new PointLightNode( [2, 15, 2], [0.3, 0.3, 0.3]);
+        var lightNode2 = new PointLightNode( [10, 15, 3], [0.3, 0, 0]);
+        var lightNode3 = new PointLightNode( [-5, 15, -5], [0, 0.3, 0]);
+        var lightNode4 = new PointLightNode( [5, 6, 5], [0, 0, 1.0]);
+        
+        var sunLightNode = new DirectionalLightNode( [0.07, 0.07, 0.07], [1.0, 1.0, -1.0] )
+        // sceneGraph.addNode(lightNode1);
+        // sceneGraph.addNode(lightNode2);
+        // sceneGraph.addNode(lightNode3);
+        // sceneGraph.addNode(lightNode4);
+        sceneGraph.addNode(sunLightNode);
 		
 		updateEngine.setSceneGraph(sceneGraph);
         updateEngine.addPlayer(player);

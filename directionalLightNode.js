@@ -1,17 +1,14 @@
-var LightNode = function(position, color){
-    this.lNode = this.lNode(position, color);
-    
+var DirectionalLightNode = function(intensity, direction){
+    this.lNode = this.lNode(intensity, direction);
 }
 
-LightNode.prototype = {
+DirectionalLightNode.prototype = {
 	
-	lNode : (function(position, color){
+	lNode : (function(intensity, direction){
 		
-		var _position = position;
-		var _color = color;
-        const nodeType = 2;
-        
-        var temp = 0;
+		var _intensity = intensity;
+		var _direction = direction;
+        var nodeType = 3;
 		
 		function _update(){
 
@@ -19,7 +16,7 @@ LightNode.prototype = {
         
         function _getLightRenderData(buffer){
             
-            buffer.push({position:_position, color:_color});
+            buffer.push({intensity:_intensity, direction: _direction});
             
             return buffer;
         }

@@ -11,11 +11,18 @@
 		varying mediump vec3 vToCamera;
 		
 		varying mediump vec3 vLightColor[MAX_NUM_OF_LIGHTS];
+        
+        varying mediump vec2 fragTexCoord;
+        varying mediump vec3 fragNormal;
 
 		uniform sampler2D uSampler;
 		uniform highp float uShineDamper;
 		uniform highp float uReflectivity;
         uniform lowp int uNumberOfLights;
+        uniform mediump vec3 ambientLightIntensity;
+        uniform mediump vec3 uDirectionalLightIntensity;
+        uniform mediump vec3 uDirectionalLightDirection;
+        uniform bool directionalLightPresent;
 
 		void main(void) {
 			mediump vec4 texelColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
@@ -30,6 +37,14 @@
             mediump vec3 lightDirection;
             mediump vec3 reflectedLightDirection;
             mediump vec3 finalSpecular;
+            mediump vec3 lightIntensity = vec3(0.0, 0.0, 0.0);
+            
+            mediump vec3 ambientLightIntensity = vec3(0.2, 0.2, 0.2);
+            
+            if(uDirectionalLightIntensity != vec3(0.0, 0.0, 0.0)){
+                lightIntensity = ambientLightIntensity +
+                    uDirectionalLightIntensity * max(dot(vNormal, uDirectionalLightDirection), 0.0);
+            }
             
             for(int i = 0; i < MAX_NUM_OF_LIGHTS; i++) {
                 if(i > uNumberOfLights) {
@@ -38,6 +53,7 @@
                 unitLight = normalize(vLightPosition[i]);
                 brightness = max(dot(unitNormal, unitLight), 0.0);
                 diffuse += brightness * vLightColor[i];
+                diffuse += lightIntensity;
                 
                 lightDirection = -unitLight;
                 reflectedLightDirection = reflect(lightDirection, unitNormal);
@@ -75,6 +91,8 @@
 		varying mediump vec3 vLightPosition[MAX_NUM_OF_LIGHTS];
 		varying mediump vec3 vLightColor[MAX_NUM_OF_LIGHTS];
 		varying mediump vec3 vToCamera;
+        
+        varying mediump vec3 fragNormal;
 		
 		void main(void) {
 		
@@ -97,7 +115,8 @@
 	</script>
 	<script src=".\toji-gl-matrix-14ad027\dist\gl-matrix-min.js"></script>
 	<script src="inputEngine.js"></script>
-	<script src="lightNode.js"></script>
+	<script src="pointLightNode.js"></script>
+    <script src="directionalLightNode.js"></script>
     <script src="cameraNode.js"></script>
     <script src="player.js"></script>
 	<script src="modelData.js"></script>

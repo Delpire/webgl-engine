@@ -114,6 +114,9 @@ RenderEngine.prototype = {
             
             shaderProgram.numberOfLights = gl.getUniformLocation(shaderProgram, "uNumberOfLights");
             
+            shaderProgram.directionalLightIntensity = gl.getUniformLocation(shaderProgram, "uDirectionalLightIntensity");
+            shaderProgram.directionalLightDirection = gl.getUniformLocation(shaderProgram, "uDirectionalLightDirection");
+            
 			shaderProgram.lightPosition = [];
 			shaderProgram.lightColor = [];
 			for(var i = 0; i < MAXNUMOFLIGHTS; i++){
@@ -253,7 +256,7 @@ RenderEngine.prototype = {
 		}
 		
 		function _fillRenderBuffer(){
-			renderCache = { models:[], lights:[] };
+			renderCache = { models:[], lights:[], directional_light:[] };
 			sceneGraph.getRenderData(renderCache);
 		}
 
@@ -278,7 +281,12 @@ RenderEngine.prototype = {
             for (var i = 0; i < renderCache.lights.length; i++){
                 gl.uniform3fv(shaderProgram.lightPosition[i], renderCache.lights[i].position);
                 gl.uniform3fv(shaderProgram.lightColor[i], renderCache.lights[i].color);
-            }           
+            }
+            
+            if (renderCache.directional_light.length > 0){
+                gl.uniform3fv(shaderProgram.directionalLightIntensity, renderCache.directional_light[0].intensity);
+                gl.uniform3fv(shaderProgram.directionalLightDirection, renderCache.directional_light[0].direction);
+            }      
             
             gl.uniform1i(shaderProgram.numberOfLights, renderCache.lights.length)
             
