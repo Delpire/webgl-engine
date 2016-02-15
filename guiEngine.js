@@ -49,10 +49,11 @@ GuiEngine.prototype = {
     },
     
     drawFont: function(text, font, position){
-        this.guiCtx.font = font;
+        
         this.guiCtx.textAlign = "left";
         this.guiCtx.textBaseline = "top";
         this.guiCtx.fillStyle = "white";
+        this.guiCtx.font = font;
         this.guiCtx.fillText(text, position.x, position.y);
     },
     

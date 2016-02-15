@@ -27,13 +27,14 @@ var game = (function(){
         
         count++;
         
-        if(totalElapsedTime > 10000){
-             totalElapsedTime = totalElapsedTime - 10000;
-             count = 0;
+        if(totalElapsedTime > 100000){
+            fps = count / (totalElapsedTime / 1000);
+            totalElapsedTime = fps * 1000;
+            count = 1;
         }
           
         guiEngine.clearCanvas();
-        guiEngine.drawFont("FPS: " + Math.floor(count / (totalElapsedTime / 1000)), "15px monospace", { x:1, y:2 });
+        guiEngine.drawFont("FPS:" + Math.floor(count / (totalElapsedTime / 1000)), "20px Monospace", { x:0, y:0 });
         guiEngine.createTextureFromCanvas();
         
 		//Update
@@ -61,7 +62,7 @@ var game = (function(){
         guiEngine.width = 1024;
         guiEngine.height = 576;
         guiEngine.createUIQuad();
-        guiEngine.drawFont("FPS: ", "15px monospace", { x:1, y:2 });
+        guiEngine.drawFont("FPS:", "25px Monospace", { x:1, y:2 });
         guiEngine.createTextureFromCanvas();
         
 		//Init Asset Engine.
