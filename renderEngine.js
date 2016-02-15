@@ -182,10 +182,6 @@ RenderEngine.prototype = {
 		}
 		
 		function _createTextureBuffer(image, texture){
-			
-            console.log(image.src);
-            console.log(image.width, image.height);
-            console.log((128 & (128 - 1)))
             
 			gl.bindTexture(gl.TEXTURE_2D, texture);
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
@@ -198,6 +194,19 @@ RenderEngine.prototype = {
             
 			loadingTexture--;
 		}
+        
+        function _createTextureBufferFromCanvas(canvas){
+            
+            var texture = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+            gl.generateMipmap(gl.TEXTURE_2D);
+			gl.bindTexture(gl.TEXTURE_2D, null);
+            return texture;
+        }
 		
 		function _getShader(gl, id) {
 			var shaderScript = document.getElementById(id);
@@ -248,7 +257,7 @@ RenderEngine.prototype = {
             
             gl.activeTexture(gl.TEXTURE0 + model.textureIndex);
             gl.bindTexture(gl.TEXTURE_2D, model.textureBuffer);
-            gl.uniform1i(gl.getUniformLocation(shaderProgram, "uSampler"), 0);
+            gl.uniform1i(gl.getUniformLocation(shaderProgram, "uSampler"), model.textureIndex);
             
             gl.uniform1f(shaderProgram.reflectivity, model.material.reflectivity);
             gl.uniform1f(shaderProgram.shineDamper, model.material.shineDamper);
@@ -273,7 +282,7 @@ RenderEngine.prototype = {
         
             gl.activeTexture(gl.TEXTURE0 + guiElement.TextureIndex);
             gl.bindTexture(gl.TEXTURE_2D, guiElement.TextureBuffer);
-            gl.uniform1i(gl.getUniformLocation(guiShaderProgram, "uGuiSampler"), 1);
+            gl.uniform1i(gl.getUniformLocation(guiShaderProgram, "uGuiSampler"), guiElement.TextureIndex);
         
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, guiElement.IndexBuffer);
         
@@ -345,7 +354,30 @@ RenderEngine.prototype = {
             for (var guiElement of guiElements){
                 _drawGui(guiElement);
             }
+            
+            _renderUI();
 		}
+        
+        function _renderUI(){
+            
+            gl.bindBuffer(gl.ARRAY_BUFFER, guiEngine.vertexBuffer);
+            gl.vertexAttribPointer(guiShaderProgram.vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+        
+            gl.bindBuffer(gl.ARRAY_BUFFER, guiEngine.textureCoordsBuffer);
+            gl.vertexAttribPointer(guiShaderProgram.textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);       
+        
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, guiEngine.textureBuffer);
+            gl.uniform1i(gl.getUniformLocation(guiShaderProgram, "uGuiSampler"), 0);
+                        
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, guiEngine.indexBuffer);    
+
+            gl.uniform2fv(guiShaderProgram.guiPosition, vec2.fromValues(0,0));
+            
+            //Draw array of verticies as triangles starting at item 0 and ended at last element of the array.
+            //Change this to gl.TRIANGLE_STRIP to draw quads.
+            gl.drawElements(gl.TRIANGLE_STRIP, 4, gl.UNSIGNED_SHORT, 0); 
+        }
 		
 		function _setSceneGraph(graph){
 			sceneGraph = graph;
@@ -369,6 +401,7 @@ RenderEngine.prototype = {
 			createArrayBuffer: _createArrayBuffer,
 			createElementArrayBuffer: _createElementArrayBuffer,
 			createTexture: _createTexture,
+            createTextureBufferFromCanvas: _createTextureBufferFromCanvas,
 		}
 			
 	})(),
@@ -405,6 +438,10 @@ RenderEngine.prototype = {
 	
 	createTexture: function(image){
 		return this.rEngine.createTexture(image);
+	},
+    
+    createTextureBufferFromCanvas: function(canvas){
+		return this.rEngine.createTextureBufferFromCanvas(canvas);
 	}
 	
 }

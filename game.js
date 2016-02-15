@@ -5,10 +5,37 @@ var game = (function(){
 	var renderEngine = new RenderEngine();
 	var assetEngine = new AssetEngine();
 	var inputEngine = new InputEngine();
-    var guiEngine = new GuiEngine(renderEngine, assetEngine).api;
+    var guiEngine = new GuiEngine(renderEngine, assetEngine);
+ 
+    var previousTime;
+    var elapsedTime;
+    var currentTime;
+    var totalElapsedTime = 0;
+    var count = 0;
+    
+    var TIME_STEP = 1000/60;
 	
-	function _loop(time){
+	function _loop(){
 		
+        currentTime = Date.now();
+        
+        elapsedTime = currentTime - previousTime;
+        totalElapsedTime += elapsedTime;
+        
+        elapsedTime = Math.min(elapsedTime, 4 * TIME_STEP);
+        previousTime = currentTime;
+        
+        count++;
+        
+        if(totalElapsedTime > 10000){
+             totalElapsedTime = totalElapsedTime - 10000;
+             count = 0;
+        }
+          
+        guiEngine.clearCanvas();
+        guiEngine.drawFont("FPS: " + Math.floor(count / (totalElapsedTime / 1000)), "15px monospace", { x:1, y:2 });
+        guiEngine.createTextureFromCanvas();
+        
 		//Update
 		updateEngine.update();
 		
@@ -16,8 +43,8 @@ var game = (function(){
 		renderEngine.render();
 		
 		window.requestAnimationFrame(
-			function(time){
-				_loop.call(time)
+			function(){
+				_loop.call();
 			}		
 		);
 	}
@@ -28,6 +55,15 @@ var game = (function(){
 		renderEngine.initEngine();
 		renderEngine.setAssetEngine(assetEngine);
 		
+        //TODO: Get size from context;
+        //Init Gui Engine.
+        guiEngine.setUpContext(1024);
+        guiEngine.width = 1024;
+        guiEngine.height = 576;
+        guiEngine.createUIQuad();
+        guiEngine.drawFont("FPS: ", "15px monospace", { x:1, y:2 });
+        guiEngine.createTextureFromCanvas();
+        
 		//Init Asset Engine.
 		assetEngine.setRenderEngine(renderEngine);
 		
@@ -38,10 +74,10 @@ var game = (function(){
         
 		sceneGraph.setInputEngine(inputEngine);
         
-        var guiElement = new GuiElement("crosshair", vec2.fromValues(0, 0), .1, .1).api; 
+        var guiElement = new GuiElement("crosshair", vec2.fromValues(-0.025, 0.05), 0.1, 0.1).api; 
         guiEngine.addGuiElement(guiElement);
-
-        renderEngine.setGuiEngine(guiEngine)
+        
+        renderEngine.setGuiEngine(guiEngine);
 
 		//Set up square model.
 		var sqModel = new ModelNode(assetEngine.getModel("square"));
@@ -79,6 +115,7 @@ var game = (function(){
 		updateEngine.setSceneGraph(sceneGraph);
         updateEngine.addPlayer(player);
 		renderEngine.setSceneGraph(sceneGraph);
+        previousTime = Date.now();
 		_loop();
 	}
 	

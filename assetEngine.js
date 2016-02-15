@@ -8,7 +8,7 @@ AssetEngine.prototype = {
 		var models = [];
 		var textures = [];
         
-        var _textureIndex = 0;
+        var _textureIndex = 1;
 		
 		function _loadModel(n, verts, indicies, normals, textureName, textureCoordinates, size){
 					
